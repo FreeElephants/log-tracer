@@ -4,16 +4,21 @@
     "license": "BSD-2-Clause",
     "authors": [],
     "require-dev": {
-        "phpunit/phpunit": ">=9.3"
+        "phpunit/phpunit": ">=9.3",
+        "sentry/sentry": "^4.18"
     },
     "autoload": {
     	"psr-4": {
-            "Samizam\\Skeleton\\": "src/Samizdam/Skeleton"
+            "FreeElephants\\LogTracer\\": "src/FreeElephants/LogTracer"
     	}
     },
     "autoload-dev": {
     	"psr-4": {
-            "Samizdam\\Skeleton\\": "tests/Samizdam/Skeleton"
+            "FreeElephants\\LogTracer\\": "tests/FreeElephants/LogTracer"
     	}
+    },
+    "require": {
+        "monolog/monolog": "^3.9",
+        "psr/http-message": "^2.0"
     }
 }
