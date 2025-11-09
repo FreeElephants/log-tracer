@@ -15,11 +15,11 @@ class TraceContext implements TraceContextInterface
     private string $sentryTraceHeader;
     private string $baggageHeader;
     private string $traceId;
-    private SentryTraceProvider $sentryTraceProvider;
+    private AbstractSentryTraceProvider $sentryTraceProvider;
 
-    public function __construct(?SentryTraceProvider $sentryTraceProvider = null)
+    public function __construct(?AbstractSentryTraceProvider $sentryTraceProvider = null)
     {
-        $this->sentryTraceProvider = $sentryTraceProvider ?: new SentryTraceProvider();
+        $this->sentryTraceProvider = $sentryTraceProvider ?: AbstractSentryTraceProvider::createInstance();
     }
 
     /**
@@ -67,9 +67,10 @@ class TraceContext implements TraceContextInterface
 
     public function populateWithDefaults(): string
     {
-        $this->sentryTraceHeader = \Sentry\getTraceparent();
-        $this->baggageHeader = \Sentry\getBaggage();
-        $this->traceparentHeader = \Sentry\getW3CTraceparent();
+        $this->sentryTraceHeader = $this->sentryTraceProvider->getSentryTraceHeader();
+        $this->baggageHeader = $this->sentryTraceProvider->getBaggageHeader();
+        $this->traceparentHeader = $this->sentryTraceProvider->getTranceparentHeader();
+
         $this->traceId = explode('-', $this->traceparentHeader)[1];
 
         $this->isInitialized = true;

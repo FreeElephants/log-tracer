@@ -1,11 +1,22 @@
 <?php
-
 declare(strict_types=1);
 
 namespace FreeElephants\LogTracer\Sentry;
 
-class SentryTraceProvider
+use Composer\Semver\Comparator;
+use Sentry\Client;
+
+abstract class AbstractSentryTraceProvider
 {
+    public static function createInstance(): self
+    {
+        if(Comparator::greaterThanOrEqualTo(Client::SDK_VERSION, '4.12')) {
+            return new SentryTraceProviderVersionFrom4_12();
+        }
+
+        return new SentryTraceProviderVersionBefore4_12();
+    }
+
     public function getSentryTraceHeader(): string
     {
         return \Sentry\getTraceparent();
@@ -14,11 +25,6 @@ class SentryTraceProvider
     public function getBaggageHeader(): string
     {
         return \Sentry\getBaggage();
-    }
-
-    public function getTranceparentHeader(): string
-    {
-        return \Sentry\getW3CTraceparent();
     }
 
     public function continueTrace(string $sentryTraceHeader, string $baggageHeader): string
