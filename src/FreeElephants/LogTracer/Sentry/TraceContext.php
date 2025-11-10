@@ -12,7 +12,6 @@ use Sentry\State\HubInterface;
 use Sentry\State\Scope;
 use function Sentry\continueTrace;
 use function Sentry\getBaggage;
-use function Sentry\getTraceparent;
 
 class TraceContext implements TraceContextInterface
 {
