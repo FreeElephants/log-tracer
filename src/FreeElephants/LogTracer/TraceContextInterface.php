@@ -12,13 +12,13 @@ interface TraceContextInterface
 
     public function isInitialized(): bool;
 
-    public function populateFromMessage(MessageInterface $request): string;
+    public function populateWithDefaults();
+
+    public function populateFromMessage(MessageInterface $request);
 
     public function traceMessage(MessageInterface $message): MessageInterface;
 
     public function getTraceId(): string;
 
     public function getParentId(): string;
-
-    public function populateWithDefaults(): string;
 }

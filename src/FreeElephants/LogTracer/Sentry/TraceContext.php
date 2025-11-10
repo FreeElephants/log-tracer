@@ -42,21 +42,21 @@ class TraceContext implements TraceContextInterface
             ->withHeader('baggage', getBaggage());
     }
 
-    public function populateFromMessage(MessageInterface $request): string
+    public function populateFromMessage(MessageInterface $request)
     {
-        $incomeValue = $request->getHeaderLine('traceparent');
-        if (preg_match(self::W3C_TRACEPARENT_HEADER_REGEX, $incomeValue, $parts) === 1) {
-            $this->traceId = $parts['trace_id'];
-            $this->parentId = $parts['parent_id'];
-            $this->isSampled = $parts['sampled'] === '01';
+        if ($incomeValue = $request->getHeaderLine('traceparent')) {
+            if (preg_match(self::W3C_TRACEPARENT_HEADER_REGEX, $incomeValue, $parts) === 1) {
+                $this->traceId = $parts['trace_id'];
+                $this->parentId = $parts['parent_id'];
+                $this->isSampled = $parts['sampled'] === '01';
 
-            $this->isInitialized = true;
-            continueTrace($this->buildSentryTraceValue(), $request->getHeaderLine('baggage'));
-
-            return $this->traceId;
+                $this->isInitialized = true;
+                continueTrace($this->buildSentryTraceValue(), $request->getHeaderLine('baggage'));
+                return;
+            }
         }
 
-        return $this->populateWithDefaults();
+        $this->populateWithDefaults();
     }
 
     public function getTraceId(): string
@@ -73,7 +73,7 @@ class TraceContext implements TraceContextInterface
         return $this->isInitialized;
     }
 
-    public function populateWithDefaults(): string
+    public function populateWithDefaults()
     {
         if($span = $this->hub->getSpan()) {
             $this->traceId = (string) $span->getTraceId();
@@ -86,8 +86,6 @@ class TraceContext implements TraceContextInterface
         }
 
         $this->isInitialized = true;
-
-        return $this->traceId;
     }
 
     public function getParentId(): string

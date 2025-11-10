@@ -29,6 +29,16 @@ class SimpleTraceContextTest extends TestCase
         $this->assertNotSame('00f067aa0ba902b7', $context->getParentId());
     }
 
+    public function testPopulateFromMessageWithoutW3CHeader(): void
+    {
+        $context = new SimpleTraceContext();
+
+        $context->populateFromMessage(new ServerRequest('GET', '/foo'));
+
+        $this->assertNotSame('4bf92f3577b34da6a3ce929d0e0e4736', $context->getTraceId());
+        $this->assertNotSame('00f067aa0ba902b7', $context->getParentId());
+    }
+
     public function testPopulateWithDefaults(): void
     {
         $context = new SimpleTraceContext();

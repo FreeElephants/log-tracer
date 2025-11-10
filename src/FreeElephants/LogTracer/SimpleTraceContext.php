@@ -17,18 +17,19 @@ class SimpleTraceContext implements TraceContextInterface
         // TODO: Implement isInitialized() method.
     }
 
-    public function populateFromMessage(MessageInterface $request): string
+    public function populateFromMessage(MessageInterface $request)
     {
-        $incomeValue = $request->getHeaderLine('traceparent');
-        if (preg_match(self::W3C_TRACEPARENT_HEADER_REGEX, $incomeValue, $parts) === 1) {
-            $this->traceId = $parts['trace_id'];
-            $this->parentId = $parts['parent_id'];
-            $this->isSampled = $parts['sampled'] === '01';
+        if ($incomeValue = $request->getHeaderLine('traceparent')) {
+            if (preg_match(self::W3C_TRACEPARENT_HEADER_REGEX, $incomeValue, $parts) === 1) {
+                $this->traceId = $parts['trace_id'];
+                $this->parentId = $parts['parent_id'];
+                $this->isSampled = $parts['sampled'] === '01';
 
-            return $this->traceId;
+                return;
+            }
         }
 
-        return $this->populateWithDefaults();
+        $this->populateWithDefaults();
     }
 
     public function traceMessage(MessageInterface $message): MessageInterface
@@ -41,12 +42,10 @@ class SimpleTraceContext implements TraceContextInterface
         return $this->traceId;
     }
 
-    public function populateWithDefaults(): string
+    public function populateWithDefaults()
     {
         $this->traceId = bin2hex(random_bytes(16));
         $this->parentId = bin2hex(random_bytes(8));
-
-        return $this->traceId;
     }
 
     public function getParentId(): string
