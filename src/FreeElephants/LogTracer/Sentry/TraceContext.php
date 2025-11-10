@@ -7,6 +7,9 @@ namespace FreeElephants\LogTracer\Sentry;
 use FreeElephants\LogTracer\Exception\NotInitializedTraceContextUsage;
 use FreeElephants\LogTracer\TraceContextInterface;
 use Psr\Http\Message\MessageInterface;
+use Sentry\SentrySdk;
+use Sentry\State\HubInterface;
+use Sentry\State\Scope;
 use function Sentry\continueTrace;
 use function Sentry\getBaggage;
 use function Sentry\getTraceparent;
@@ -14,18 +17,15 @@ use function Sentry\getTraceparent;
 class TraceContext implements TraceContextInterface
 {
     private bool $isInitialized = false;
-    private string $traceparentHeader;
-    private string $sentryTraceHeader;
-    private string $baggageHeader;
     private string $traceId;
     private string $parentId;
     private bool $isSampled = false;
 
-    private AbstractSentryTraceProvider $sentryTraceProvider;
+    private HubInterface $hub;
 
-    public function __construct(?AbstractSentryTraceProvider $sentryTraceProvider = null)
+    public function __construct(HubInterface $hub = null)
     {
-        $this->sentryTraceProvider = $sentryTraceProvider ?: AbstractSentryTraceProvider::createInstance();
+        $this->hub = $hub ?: SentrySdk::getCurrentHub();
     }
 
     /**
@@ -76,15 +76,19 @@ class TraceContext implements TraceContextInterface
 
     public function populateWithDefaults(): string
     {
-        $this->sentryTraceHeader = $this->sentryTraceProvider->getSentryTraceHeader();
-        $this->baggageHeader = $this->sentryTraceProvider->getBaggageHeader();
-        $this->traceparentHeader = $this->sentryTraceProvider->getTranceparentHeader();
-
-        $this->traceId = explode('-', $this->traceparentHeader)[1];
+        if($span = $this->hub->getSpan()) {
+            $this->traceId = (string) $span->getTraceId();
+            $this->parentId = (string) $span->getSpanId();
+        } else {
+            $this->hub->configureScope(function (Scope $scope)  {
+                $this->traceId = (string) $scope->getPropagationContext()->getTraceId();
+                $this->parentId = (string) $scope->getPropagationContext()->getSpanId();
+            });
+        }
 
         $this->isInitialized = true;
 
-        return $this->sentryTraceProvider->continueTrace($this->sentryTraceHeader, $this->baggageHeader);
+        return $this->traceId;
     }
 
     public function getParentId(): string
