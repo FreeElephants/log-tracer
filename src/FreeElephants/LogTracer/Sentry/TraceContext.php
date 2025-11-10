@@ -45,7 +45,7 @@ class TraceContext implements TraceContextInterface
     public function populateFromMessage(MessageInterface $request): string
     {
         $incomeValue = $request->getHeaderLine('traceparent');
-        if (preg_match(self::W3C_TRACEPARENT_HEADER_REGEX, $incomeValue, $parts)) {
+        if (preg_match(self::W3C_TRACEPARENT_HEADER_REGEX, $incomeValue, $parts) === 1) {
             $this->traceId = $parts['trace_id'];
             $this->parentId = $parts['parent_id'];
             $this->isSampled = $parts['sampled'] === '01';

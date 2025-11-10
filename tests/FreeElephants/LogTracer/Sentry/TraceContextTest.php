@@ -45,6 +45,7 @@ class TraceContextTest extends TestCase
         $context->populateFromMessage($request);
 
         $this->assertSame('4bf92f3577b34da6a3ce929d0e0e4736', $context->getTraceId());
+        $this->assertSame('00f067aa0ba902b7', $context->getParentId());
 
         $tracedMessage = $context->traceMessage(new Response());
 
