@@ -34,15 +34,21 @@ class TraceContext implements TraceContextInterface
         return $message
             ->withHeader('traceparent', $this->traceparentHeader)
             ->withHeader('sentry-trace', $this->sentryTraceHeader)
-            ->withHeader('baggage', $this->baggageHeader)
-        ;
+            ->withHeader('baggage', $this->baggageHeader);
     }
 
     public function populateFromMessage(MessageInterface $request): string
     {
-        $this->sentryTraceHeader = $request->getHeaderLine('sentry-trace') ?: $this->sentryTraceProvider->getSentryTraceHeader();
+        $incomeValue = $request->getHeaderLine('traceparent');
+
+        if ($this->tryFromValue($incomeValue)) {
+            $this->traceparentHeader = $incomeValue;
+        } else {
+            $this->traceparentHeader = $this->sentryTraceProvider->getTranceparentHeader();
+            $this->sentryTraceHeader = $this->sentryTraceProvider->getSentryTraceHeader();
+        }
+
         $this->baggageHeader = $request->getHeaderLine('baggage') ?: $this->sentryTraceProvider->getBaggageHeader();
-        $this->traceparentHeader = $request->getHeaderLine('traceparent') ?: $this->sentryTraceProvider->getTranceparentHeader();
 
         $this->traceId = $this->sentryTraceProvider->continueTrace($this->sentryTraceHeader, $this->baggageHeader);
 
@@ -76,5 +82,33 @@ class TraceContext implements TraceContextInterface
         $this->isInitialized = true;
 
         return $this->sentryTraceProvider->continueTrace($this->sentryTraceHeader, $this->baggageHeader);
+    }
+
+    private function tryFromValue(string $incomeValue): bool
+    {
+        if (preg_match(self::W3C_TRACEPARENT_HEADER_REGEX, $incomeValue, $matches)) {
+            if (!empty($matches['trace_id'])) {
+                $this->traceId = $matches['trace_id'];
+            }
+
+            if (!empty($matches['span_id'])) {
+                $parentSpanId = $matches['span_id'];
+            }
+
+            if (isset($matches['sampled'])) {
+                $parentSampled = $matches['sampled'] === '01';
+            }
+
+            $this->traceparentHeader = $incomeValue;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getParentId(): string
+    {
+        // TODO: Implement getParentId() method.
     }
 }
