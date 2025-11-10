@@ -7,7 +7,6 @@ use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\ServerRequest;
 use PHPUnit\Framework\TestCase;
-use Sentry\SentrySdk;
 use function Sentry\getBaggage;
 use function Sentry\getTraceparent;
 
@@ -16,7 +15,7 @@ class TraceContextTest extends TestCase
 
     public function testPopulateWithDefaults(): void
     {
-        $context = new TraceContext(SentrySdk::getCurrentHub());
+        $context = new TraceContext();
 
         $context->populateWithDefaults();
 
@@ -26,7 +25,7 @@ class TraceContextTest extends TestCase
 
     public function testTraceMessage(): void
     {
-        $context = new TraceContext(SentrySdk::getCurrentHub());
+        $context = new TraceContext();
 
         $context->populateWithDefaults();
 
@@ -39,7 +38,7 @@ class TraceContextTest extends TestCase
 
     public function testPopulateFromMessageWithW3CHeader(): void
     {
-        $context = new TraceContext(SentrySdk::getCurrentHub());
+        $context = new TraceContext();
 
         $request = (new ServerRequest('GET', '/foo'))->withHeader('traceparent', '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01');
 
