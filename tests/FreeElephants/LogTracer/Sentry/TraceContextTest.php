@@ -7,11 +7,18 @@ use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\ServerRequest;
 use PHPUnit\Framework\TestCase;
+use Sentry\SentrySdk;
 use function Sentry\getBaggage;
 use function Sentry\getTraceparent;
 
 class TraceContextTest extends TestCase
 {
+
+    public function setUp(): void
+    {
+        SentrySdk::init();
+        parent::setUp();
+    }
 
     public function testPopulateWithDefaults(): void
     {
@@ -52,5 +59,19 @@ class TraceContextTest extends TestCase
         $this->assertSame('00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01', $tracedMessage->getHeaderLine('traceparent'));
         $this->assertSame('4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7', $tracedMessage->getHeaderLine('sentry-trace'));
         $this->assertTrue($tracedMessage->hasHeader('baggage'));
+    }
+
+    public function testPopulateFromMessageWithVendorHeaders(): void
+    {
+        $context = new TraceContext();
+
+        $request = (new ServerRequest('GET', '/foo'))
+            ->withHeader('sentry-trace', '4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7')
+        ;
+
+        $context->populateFromMessage($request);
+
+        $this->assertSame('4bf92f3577b34da6a3ce929d0e0e4736', $context->getTraceId());
+        $this->assertSame('00f067aa0ba902b7', $context->getParentId());
     }
 }

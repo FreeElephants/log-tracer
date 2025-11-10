@@ -15,6 +15,7 @@ use function Sentry\getBaggage;
 
 class TraceContext implements TraceContextInterface
 {
+    private const SENTRY_TRACE_HEADER_REGEX = '/^[ \\t]*(?<trace_id>[0-9a-f]{32})?-?(?<span_id>[0-9a-f]{16})?-?(?<sampled>[01])?[ \\t]*$/i';
     private bool $isInitialized = false;
     private string $traceId;
     private string $parentId;
@@ -54,6 +55,18 @@ class TraceContext implements TraceContextInterface
                 continueTrace($this->buildSentryTraceValue(), $request->getHeaderLine('baggage'));
                 return;
             }
+        } elseif ($incomeValue = $request->getHeaderLine('sentry-trace')) {
+            if (preg_match(self::SENTRY_TRACE_HEADER_REGEX, $incomeValue, $parts) === 1) {
+                $this->traceId = $parts['trace_id'];
+                $this->parentId = $parts['span_id'];
+                if ($parts['sampled']) {
+                    $this->isSampled = $parts['sampled'] === '01';
+                }
+
+                $this->isInitialized = true;
+                continueTrace($this->buildSentryTraceValue(), $request->getHeaderLine('baggage'));
+                return;
+            }
         }
 
         $this->populateWithDefaults();
@@ -75,13 +88,13 @@ class TraceContext implements TraceContextInterface
 
     public function populateWithDefaults()
     {
-        if($span = $this->hub->getSpan()) {
-            $this->traceId = (string) $span->getTraceId();
-            $this->parentId = (string) $span->getSpanId();
+        if ($span = $this->hub->getSpan()) {
+            $this->traceId = (string)$span->getTraceId();
+            $this->parentId = (string)$span->getSpanId();
         } else {
-            $this->hub->configureScope(function (Scope $scope)  {
-                $this->traceId = (string) $scope->getPropagationContext()->getTraceId();
-                $this->parentId = (string) $scope->getPropagationContext()->getSpanId();
+            $this->hub->configureScope(function (Scope $scope) {
+                $this->traceId = (string)$scope->getPropagationContext()->getTraceId();
+                $this->parentId = (string)$scope->getPropagationContext()->getSpanId();
             });
         }
 
