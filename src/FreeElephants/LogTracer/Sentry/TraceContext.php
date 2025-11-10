@@ -7,6 +7,9 @@ namespace FreeElephants\LogTracer\Sentry;
 use FreeElephants\LogTracer\Exception\NotInitializedTraceContextUsage;
 use FreeElephants\LogTracer\TraceContextInterface;
 use Psr\Http\Message\MessageInterface;
+use function Sentry\continueTrace;
+use function Sentry\getBaggage;
+use function Sentry\getTraceparent;
 
 class TraceContext implements TraceContextInterface
 {
@@ -15,6 +18,9 @@ class TraceContext implements TraceContextInterface
     private string $sentryTraceHeader;
     private string $baggageHeader;
     private string $traceId;
+    private string $parentId;
+    private bool $isSampled = false;
+
     private AbstractSentryTraceProvider $sentryTraceProvider;
 
     public function __construct(?AbstractSentryTraceProvider $sentryTraceProvider = null)
@@ -32,29 +38,26 @@ class TraceContext implements TraceContextInterface
         }
 
         return $message
-            ->withHeader('traceparent', $this->traceparentHeader)
-            ->withHeader('sentry-trace', $this->sentryTraceHeader)
-            ->withHeader('baggage', $this->baggageHeader);
+            ->withHeader('traceparent', sprintf('00-%s-%s-%s', $this->traceId, $this->parentId, $this->isSampled ? '01' : '00'))
+            ->withHeader('sentry-trace', $this->buildSentryTraceValue())
+            ->withHeader('baggage', getBaggage());
     }
 
     public function populateFromMessage(MessageInterface $request): string
     {
         $incomeValue = $request->getHeaderLine('traceparent');
+        if (preg_match(self::W3C_TRACEPARENT_HEADER_REGEX, $incomeValue, $parts)) {
+            $this->traceId = $parts['trace_id'];
+            $this->parentId = $parts['parent_id'];
+            $this->isSampled = $parts['sampled'] === '01';
 
-        if ($this->tryFromValue($incomeValue)) {
-            $this->traceparentHeader = $incomeValue;
-        } else {
-            $this->traceparentHeader = $this->sentryTraceProvider->getTranceparentHeader();
-            $this->sentryTraceHeader = $this->sentryTraceProvider->getSentryTraceHeader();
+            $this->isInitialized = true;
+            continueTrace($this->buildSentryTraceValue(), $request->getHeaderLine('baggage'));
+
+            return $this->traceId;
         }
 
-        $this->baggageHeader = $request->getHeaderLine('baggage') ?: $this->sentryTraceProvider->getBaggageHeader();
-
-        $this->traceId = $this->sentryTraceProvider->continueTrace($this->sentryTraceHeader, $this->baggageHeader);
-
-        $this->isInitialized = true;
-
-        return $this->traceId;
+        return $this->populateWithDefaults();
     }
 
     public function getTraceId(): string
@@ -84,31 +87,13 @@ class TraceContext implements TraceContextInterface
         return $this->sentryTraceProvider->continueTrace($this->sentryTraceHeader, $this->baggageHeader);
     }
 
-    private function tryFromValue(string $incomeValue): bool
-    {
-        if (preg_match(self::W3C_TRACEPARENT_HEADER_REGEX, $incomeValue, $matches)) {
-            if (!empty($matches['trace_id'])) {
-                $this->traceId = $matches['trace_id'];
-            }
-
-            if (!empty($matches['span_id'])) {
-                $parentSpanId = $matches['span_id'];
-            }
-
-            if (isset($matches['sampled'])) {
-                $parentSampled = $matches['sampled'] === '01';
-            }
-
-            $this->traceparentHeader = $incomeValue;
-
-            return true;
-        }
-
-        return false;
-    }
-
     public function getParentId(): string
     {
-        // TODO: Implement getParentId() method.
+        return $this->parentId;
+    }
+
+    private function buildSentryTraceValue(): string
+    {
+        return $this->traceId . '-' . $this->parentId;
     }
 }

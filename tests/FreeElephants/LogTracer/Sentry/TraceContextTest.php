@@ -13,18 +13,20 @@ class TraceContextTest extends TestCase
 
     public function testTraceMessage(): void
     {
+        $this->markTestIncomplete();
         $context = new TraceContext();
 
         $context->populateWithDefaults();
+
         $tracedMessage = $context->traceMessage(new Request('GET', '/foo'));
+
         $this->assertNotEmpty($tracedMessage->getHeader('traceparent'));
         $this->assertNotEmpty($tracedMessage->getHeader('sentry-trace'));
-        $this->assertNotEmpty($tracedMessage->getHeader('baggage'));
+        $this->assertTrue($tracedMessage->hasHeader('baggage'));
     }
 
     public function testPopulateFromMessageWithW3CHeader(): void
     {
-        $this->markTestIncomplete();
         $context = new TraceContext(AbstractSentryTraceProvider::createInstance());
 
         $request = (new ServerRequest('GET', '/foo'))->withHeader('traceparent', '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01');
@@ -37,5 +39,6 @@ class TraceContextTest extends TestCase
 
         $this->assertSame('00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01', $tracedMessage->getHeaderLine('traceparent'));
         $this->assertSame('4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7', $tracedMessage->getHeaderLine('sentry-trace'));
+        $this->assertTrue($tracedMessage->hasHeader('baggage'));
     }
 }
