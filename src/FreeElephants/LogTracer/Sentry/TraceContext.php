@@ -35,13 +35,15 @@ class TraceContext implements TraceContextInterface
             $this->populateWithDefaults();
         }
 
-        if($updateParent) {
+        if ($updateParent) {
             continueTrace(getTraceparent(), getBaggage());
         }
 
+        $sentryContext = $this->getSentryProvidedContext();
+
         return $message
-            ->withHeader('traceparent', sprintf('00-%s-%s-%s', $this->traceId, $this->parentId, $this->isSampled ? '01' : '00'))
-            ->withHeader('sentry-trace', $this->buildSentryTraceValue())
+            ->withHeader('traceparent', sprintf('00-%s-%s-%s', $sentryContext->getTraceId(), $sentryContext->getParentId(), $sentryContext->isSampled() ? '01' : '00'))
+            ->withHeader('sentry-trace', $sentryContext->getTraceId() . '-' . $sentryContext->getParentId())
             ->withHeader('baggage', getBaggage());
     }
 
@@ -54,7 +56,7 @@ class TraceContext implements TraceContextInterface
                 $this->isSampled = $parts['sampled'] === '01';
 
                 $this->isInitialized = true;
-                continueTrace($this->buildSentryTraceValue(), $request->getHeaderLine('baggage'));
+                continueTrace(sprintf('%s-%s-%s', $this->traceId, $this->parentId, $this->isSampled ? '01' : '00'), $request->getHeaderLine('baggage'));
                 return;
             }
         } elseif ($incomeValue = $request->getHeaderLine('sentry-trace')) {
@@ -90,26 +92,42 @@ class TraceContext implements TraceContextInterface
 
     public function populateWithDefaults()
     {
-        if ($span = $this->hub->getSpan()) {
-            $this->traceId = (string)$span->getTraceId();
-            $this->parentId = (string)$span->getSpanId();
-        } else {
-            $this->hub->configureScope(function (Scope $scope) {
-                $this->traceId = (string)$scope->getPropagationContext()->getTraceId();
-                $this->parentId = (string)$scope->getPropagationContext()->getSpanId();
-            });
-        }
+        $sentryContext = $this->getSentryProvidedContext();
+
+        $this->traceId = $sentryContext->getTraceId();
+        $this->parentId = $sentryContext->getParentId();
+        $this->isSampled = $sentryContext->isSampled();
 
         $this->isInitialized = true;
     }
 
-    public function getParentId(): string
+    public function getParentId(bool $update = false): string
     {
-        return $this->parentId;
+        if ($update) {
+            continueTrace(getTraceparent(), getBaggage());
+        }
+
+        return $this->getSentryProvidedContext()->getParentId();
+    }
+
+    private function getSentryProvidedContext(): SentryContext
+    {
+        if ($span = $this->hub->getSpan()) {
+            $sentryContext = SentryContext::fromSpan($span);
+        } else {
+            $sentryContext = null;
+            $this->hub->configureScope(function (Scope $scope) use (&$sentryContext) {
+                $sentryContext = SentryContext::fromPropagationContext($scope->getPropagationContext());
+            });
+        }
+
+        return $sentryContext;
     }
 
     private function buildSentryTraceValue(): string
     {
-        return $this->traceId . '-' . $this->parentId;
+//        return getTraceparent();
+        $sentryContext = $this->getSentryProvidedContext();
+        return $sentryContext->getTraceId() . '-' . $sentryContext->getParentId();
     }
 }

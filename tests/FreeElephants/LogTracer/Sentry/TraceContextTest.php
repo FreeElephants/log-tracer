@@ -8,6 +8,7 @@ use Nyholm\Psr7\Response;
 use Nyholm\Psr7\ServerRequest;
 use PHPUnit\Framework\TestCase;
 use Sentry\SentrySdk;
+use function Sentry\continueTrace;
 use function Sentry\getBaggage;
 use function Sentry\getTraceparent;
 
@@ -38,8 +39,24 @@ class TraceContextTest extends TestCase
 
         $tracedMessage = $context->traceMessage(new Request('GET', '/foo'), false);
 
-        $this->assertNotEmpty($tracedMessage->getHeaderLine('traceparent'));
+        $w3cHeaderLine = $tracedMessage->getHeaderLine('traceparent');
+        $this->assertNotEmpty($w3cHeaderLine);
+        $this->assertStringEndsWith($context->getParentId() . '-00', $w3cHeaderLine);
         $this->assertSame(getTraceparent(), $tracedMessage->getHeaderLine('sentry-trace'));
+        $this->assertSame(getBaggage(), $tracedMessage->getHeaderLine('baggage'));
+    }
+
+    public function testTraceMessageWithUpdateParent(): void
+    {
+        $context = new TraceContext();
+
+        $context->populateWithDefaults();
+
+        $tracedMessage = $context->traceMessage(new Request('GET', '/foo'), true);
+
+        $w3cHeaderLine = $tracedMessage->getHeaderLine('traceparent');
+        $this->assertNotEmpty($w3cHeaderLine);
+        $this->assertStringEndsWith($context->getParentId() . '-00', $w3cHeaderLine);
         $this->assertSame(getBaggage(), $tracedMessage->getHeaderLine('baggage'));
     }
 
@@ -52,12 +69,14 @@ class TraceContextTest extends TestCase
         $context->populateFromMessage($request);
 
         $this->assertSame('4bf92f3577b34da6a3ce929d0e0e4736', $context->getTraceId());
-        $this->assertSame('00f067aa0ba902b7', $context->getParentId());
+        $this->assertNotSame('00f067aa0ba902b7', $context->getParentId(), 'Sentry anywhere continue trace with up span on populate context');
 
-        $tracedMessage = $context->traceMessage(new Response());
+        $tracedMessage = $context->traceMessage(new Response(), false);
 
-        $this->assertSame('00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01', $tracedMessage->getHeaderLine('traceparent'));
-        $this->assertSame('4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7', $tracedMessage->getHeaderLine('sentry-trace'));
+        $w3cHeaderLine = $tracedMessage->getHeaderLine('traceparent');
+        $this->assertStringStartsWith('00-4bf92f3577b34da6a3ce929d0e0e4736-', $w3cHeaderLine);
+        $this->assertStringEndsWith($context->getParentId() . '-00', $w3cHeaderLine);
+        $this->assertSame('4bf92f3577b34da6a3ce929d0e0e4736-' . $context->getParentId(), $tracedMessage->getHeaderLine('sentry-trace'));
         $this->assertTrue($tracedMessage->hasHeader('baggage'));
     }
 
@@ -72,6 +91,6 @@ class TraceContextTest extends TestCase
         $context->populateFromMessage($request);
 
         $this->assertSame('4bf92f3577b34da6a3ce929d0e0e4736', $context->getTraceId());
-        $this->assertSame('00f067aa0ba902b7', $context->getParentId());
+        $this->assertNotSame('00f067aa0ba902b7', $context->getParentId(), 'Sentry anywhere continue trace with up span on populate context');
     }
 }
