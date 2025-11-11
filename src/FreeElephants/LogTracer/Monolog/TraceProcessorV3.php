@@ -24,6 +24,7 @@ class TraceProcessorV3 implements ProcessorInterface
             $this->traceContext->populateWithDefaults();
         }
         $record->extra['trace']['id'] = $this->traceContext->getTraceId();
+        $record->extra['trace']['parent'] = $this->traceContext->getParentId();
 
         return $record;
     }
