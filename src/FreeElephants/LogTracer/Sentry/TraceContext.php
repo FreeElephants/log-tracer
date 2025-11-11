@@ -12,6 +12,7 @@ use Sentry\State\HubInterface;
 use Sentry\State\Scope;
 use function Sentry\continueTrace;
 use function Sentry\getBaggage;
+use function Sentry\getTraceparent;
 
 class TraceContext implements TraceContextInterface
 {
@@ -28,13 +29,14 @@ class TraceContext implements TraceContextInterface
         $this->hub = $hub ?: SentrySdk::getCurrentHub();
     }
 
-    /**
-     * Получить трассировку из запроса и добавить если отсутствовала.
-     */
-    public function traceMessage(MessageInterface $message): MessageInterface
+    public function traceMessage(MessageInterface $message, bool $updateParent = true): MessageInterface
     {
         if (!$this->isInitialized) {
-            throw new NotInitializedTraceContextUsage();
+            $this->populateWithDefaults();
+        }
+
+        if($updateParent) {
+            continueTrace(getTraceparent(), getBaggage());
         }
 
         return $message

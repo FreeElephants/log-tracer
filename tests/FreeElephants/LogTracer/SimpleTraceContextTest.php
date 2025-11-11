@@ -55,8 +55,24 @@ class SimpleTraceContextTest extends TestCase
 
         $context->populateWithDefaults();
 
+        $tracedMessage = $context->traceMessage(new Request('POST', '/bar'), false);
+
+        $headerLine = $tracedMessage->getHeaderLine('traceparent');
+        $this->assertStringStartsWith('00-' . $context->getTraceId(), $headerLine);
+        $this->assertStringEndsWith($context->getParentId() . '-00', $headerLine);
+    }
+
+    public function testTraceMessageWithUpdateParent(): void
+    {
+        $context = new SimpleTraceContext();
+
+        $context->populateWithDefaults();
+
         $tracedMessage = $context->traceMessage(new Request('POST', '/bar'));
 
-        $this->assertNotEmpty($tracedMessage->getHeaderLine('traceparent'));
+        $headerLine = $tracedMessage->getHeaderLine('traceparent');
+        $this->assertStringStartsWith('00-' . $context->getTraceId(), $headerLine);
+        $this->assertStringEndsNotWith($context->getParentId(), $headerLine);
+        $this->assertStringEndsWith('-01', $headerLine);
     }
 }

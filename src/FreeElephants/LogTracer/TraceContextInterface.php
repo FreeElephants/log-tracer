@@ -16,7 +16,7 @@ interface TraceContextInterface
 
     public function populateFromMessage(MessageInterface $request);
 
-    public function traceMessage(MessageInterface $message): MessageInterface;
+    public function traceMessage(MessageInterface $message, bool $updateParent = true): MessageInterface;
 
     public function getTraceId(): string;
 

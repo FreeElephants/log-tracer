@@ -32,9 +32,9 @@ class SimpleTraceContext implements TraceContextInterface
         $this->populateWithDefaults();
     }
 
-    public function traceMessage(MessageInterface $message): MessageInterface
+    public function traceMessage(MessageInterface $message, bool $updateParent = true): MessageInterface
     {
-        return $message->withHeader('traceparent', sprintf('00-%s-%s-%s', $this->traceId, $this->parentId, $this->isSampled ? '01' : '00'));
+        return $message->withHeader('traceparent', sprintf('00-%s-%s-%s', $this->traceId, $this->getParentId($updateParent), $this->isSampled ? '01' : '00'));
     }
 
     public function getTraceId(): string
@@ -48,8 +48,13 @@ class SimpleTraceContext implements TraceContextInterface
         $this->parentId = bin2hex(random_bytes(8));
     }
 
-    public function getParentId(): string
+    public function getParentId(bool $update = false): string
     {
+        if ($update) {
+            $this->parentId = bin2hex(random_bytes(8));
+            $this->isSampled = !$this->isSampled;
+        }
+
         return $this->parentId;
     }
 }

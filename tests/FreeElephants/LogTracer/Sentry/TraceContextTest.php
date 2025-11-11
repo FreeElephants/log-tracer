@@ -36,7 +36,7 @@ class TraceContextTest extends TestCase
 
         $context->populateWithDefaults();
 
-        $tracedMessage = $context->traceMessage(new Request('GET', '/foo'));
+        $tracedMessage = $context->traceMessage(new Request('GET', '/foo'), false);
 
         $this->assertNotEmpty($tracedMessage->getHeaderLine('traceparent'));
         $this->assertSame(getTraceparent(), $tracedMessage->getHeaderLine('sentry-trace'));
