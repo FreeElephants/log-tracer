@@ -56,7 +56,7 @@ class TraceContext implements TraceContextInterface
                 $this->isSampled = $parts['sampled'] === '01';
 
                 $this->isInitialized = true;
-                continueTrace(sprintf('%s-%s-%s', $this->traceId, $this->parentId, $this->isSampled ? '01' : '00'), $request->getHeaderLine('baggage'));
+                continueTrace(sprintf('%s-%s', $this->traceId, $this->parentId), $request->getHeaderLine('baggage'));
                 return;
             }
         } elseif ($incomeValue = $request->getHeaderLine('sentry-trace')) {
@@ -126,7 +126,6 @@ class TraceContext implements TraceContextInterface
 
     private function buildSentryTraceValue(): string
     {
-//        return getTraceparent();
         $sentryContext = $this->getSentryProvidedContext();
         return $sentryContext->getTraceId() . '-' . $sentryContext->getParentId();
     }
