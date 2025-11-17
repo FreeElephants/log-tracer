@@ -45,8 +45,8 @@ class SimpleTraceContext extends AbstractTraceContext
 
     public function populateWithDefaults()
     {
-        $this->traceId = bin2hex(random_bytes(16));
-        $this->parentId = bin2hex(random_bytes(8));
+        $this->traceId = $this->buildTraceId();
+        $this->parentId = $this->buildParentId();
 
         $this->isInitialized = true;
     }
@@ -54,10 +54,20 @@ class SimpleTraceContext extends AbstractTraceContext
     public function getParentId(bool $update = false): string
     {
         if ($update) {
-            $this->parentId = bin2hex(random_bytes(8));
+            $this->parentId = $this->buildParentId();
             $this->isSampled = !$this->isSampled;
         }
 
         return $this->parentId;
+    }
+
+    private function buildParentId(): string
+    {
+        return bin2hex(random_bytes(8));
+    }
+
+    private function buildTraceId(): string
+    {
+        return bin2hex(random_bytes(16));
     }
 }
