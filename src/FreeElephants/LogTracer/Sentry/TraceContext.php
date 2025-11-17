@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace FreeElephants\LogTracer\Sentry;
 
-use FreeElephants\LogTracer\TraceContextInterface;
+use FreeElephants\LogTracer\AbstractTraceContext;
 use Psr\Http\Message\MessageInterface;
 use Sentry\SentrySdk;
 use Sentry\State\HubInterface;
@@ -13,10 +13,9 @@ use function Sentry\continueTrace;
 use function Sentry\getBaggage;
 use function Sentry\getTraceparent;
 
-class TraceContext implements TraceContextInterface
+class TraceContext extends AbstractTraceContext
 {
     private const SENTRY_TRACE_HEADER_REGEX = '/^[ \t]*(?<trace_id>[0-9a-f]{32})?-?(?<span_id>[0-9a-f]{16})?-?(?<sampled>[01])?[ \t]*$/i';
-    private bool $isInitialized = false;
     private string $traceId;
     private string $parentId;
 
@@ -29,7 +28,7 @@ class TraceContext implements TraceContextInterface
 
     public function traceMessage(MessageInterface $message, bool $updateParent = true): MessageInterface
     {
-        if (!$this->isInitialized) {
+        if (!$this->isInitialized()) {
             $this->populateWithDefaults();
         }
 
@@ -80,11 +79,6 @@ class TraceContext implements TraceContextInterface
         }
 
         return $this->traceId;
-    }
-
-    public function isInitialized(): bool
-    {
-        return $this->isInitialized;
     }
 
     public function populateWithDefaults()

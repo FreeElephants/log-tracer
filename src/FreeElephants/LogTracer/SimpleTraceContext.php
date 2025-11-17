@@ -6,17 +6,11 @@ namespace FreeElephants\LogTracer;
 
 use Psr\Http\Message\MessageInterface;
 
-class SimpleTraceContext implements TraceContextInterface
+class SimpleTraceContext extends AbstractTraceContext
 {
     private string $traceId;
     private string $parentId;
     private bool $isSampled = false;
-    private bool $isInitialized = false;
-
-    public function isInitialized(): bool
-    {
-        return $this->isInitialized;
-    }
 
     public function populateFromMessage(MessageInterface $request)
     {
