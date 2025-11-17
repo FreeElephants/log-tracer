@@ -11,7 +11,7 @@ class ContextInstanceRegistry
 {
     private const SENTRY = 'sentry';
     private const SIMPLE = 'simple';
-    private static $instances = [];
+    private static array $instances = [];
 
     public static function getSentryInstance(?HubInterface $hub = null): TraceContextInterface
     {
