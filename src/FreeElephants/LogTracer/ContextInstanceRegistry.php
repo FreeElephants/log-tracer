@@ -24,10 +24,10 @@ class ContextInstanceRegistry
 
     public static function getSimpleInstance(): TraceContextInterface
     {
-        if (empty(self::$instances[self::SENTRY])) {
-            self::$instances[self::SENTRY] = new SimpleTraceContext();
+        if (empty(self::$instances[self::SIMPLE])) {
+            self::$instances[self::SIMPLE] = new SimpleTraceContext();
         }
 
-        return self::$instances[self::SENTRY];
+        return self::$instances[self::SIMPLE];
     }
 }
