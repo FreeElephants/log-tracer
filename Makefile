@@ -11,3 +11,9 @@ build:
 
 test:
 	php vendor/bin/phpunit
+
+code-style-check:
+	./bin/php vendor/bin/php-cs-fixer check --diff --config=.php-cs-fixer.dist.php .
+
+code-style-fix:
+	./bin/php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php .
