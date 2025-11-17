@@ -15,8 +15,7 @@ class SentryContext
         string $traceId,
         string $parentId,
         bool $sampled = false
-    )
-    {
+    ) {
         $this->traceId = $traceId;
         $this->parentId = $parentId;
         $this->sampled = $sampled;
@@ -25,8 +24,8 @@ class SentryContext
     public static function fromSpan(Span $span): self
     {
         return new self(
-            (string)$span->getTraceId(),
-            (string)$span->getSpanId(),
+            (string) $span->getTraceId(),
+            (string) $span->getSpanId(),
             $span->getSampled(),
         );
     }
@@ -34,8 +33,8 @@ class SentryContext
     public static function fromPropagationContext(PropagationContext $propagationContext): self
     {
         return new self(
-            (string)$propagationContext->getTraceId(),
-            (string)$propagationContext->getSpanId(),
+            (string) $propagationContext->getTraceId(),
+            (string) $propagationContext->getSpanId(),
         );
     }
 

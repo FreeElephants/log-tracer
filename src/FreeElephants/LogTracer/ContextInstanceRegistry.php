@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace FreeElephants\LogTracer;
@@ -8,12 +9,11 @@ use Sentry\State\HubInterface;
 
 class ContextInstanceRegistry
 {
-    private static $instances = [];
-
     private const SENTRY = 'sentry';
     private const SIMPLE = 'simple';
+    private static $instances = [];
 
-    public static function getSentryInstance(HubInterface $hub = null): TraceContextInterface
+    public static function getSentryInstance(?HubInterface $hub = null): TraceContextInterface
     {
         if (empty(self::$instances[self::SENTRY])) {
             self::$instances[self::SENTRY] = new TraceContext($hub);

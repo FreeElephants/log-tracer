@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace FreeElephants\LogTracer\Sentry;
@@ -8,13 +9,11 @@ use Nyholm\Psr7\Response;
 use Nyholm\Psr7\ServerRequest;
 use PHPUnit\Framework\TestCase;
 use Sentry\SentrySdk;
-use function Sentry\continueTrace;
 use function Sentry\getBaggage;
 use function Sentry\getTraceparent;
 
 class TraceContextTest extends TestCase
 {
-
     public function setUp(): void
     {
         SentrySdk::init();

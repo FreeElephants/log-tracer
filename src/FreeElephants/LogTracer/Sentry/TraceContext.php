@@ -15,14 +15,14 @@ use function Sentry\getTraceparent;
 
 class TraceContext implements TraceContextInterface
 {
-    private const SENTRY_TRACE_HEADER_REGEX = '/^[ \\t]*(?<trace_id>[0-9a-f]{32})?-?(?<span_id>[0-9a-f]{16})?-?(?<sampled>[01])?[ \\t]*$/i';
+    private const SENTRY_TRACE_HEADER_REGEX = '/^[ \t]*(?<trace_id>[0-9a-f]{32})?-?(?<span_id>[0-9a-f]{16})?-?(?<sampled>[01])?[ \t]*$/i';
     private bool $isInitialized = false;
     private string $traceId;
     private string $parentId;
 
     private HubInterface $hub;
 
-    public function __construct(HubInterface $hub = null)
+    public function __construct(?HubInterface $hub = null)
     {
         $this->hub = $hub ?: SentrySdk::getCurrentHub();
     }
@@ -42,7 +42,8 @@ class TraceContext implements TraceContextInterface
         return $message
             ->withHeader('traceparent', sprintf('00-%s-%s-%s', $sentryContext->getTraceId(), $sentryContext->getParentId(), $sentryContext->isSampled() ? '01' : '00'))
             ->withHeader('sentry-trace', $sentryContext->getTraceId() . '-' . $sentryContext->getParentId())
-            ->withHeader('baggage', getBaggage());
+            ->withHeader('baggage', getBaggage())
+        ;
     }
 
     public function populateFromMessage(MessageInterface $request)
@@ -54,6 +55,7 @@ class TraceContext implements TraceContextInterface
 
                 $this->isInitialized = true;
                 continueTrace(sprintf('%s-%s', $this->traceId, $this->parentId), $request->getHeaderLine('baggage'));
+
                 return;
             }
         } elseif ($incomeValue = $request->getHeaderLine('sentry-trace')) {
@@ -63,6 +65,7 @@ class TraceContext implements TraceContextInterface
 
                 $this->isInitialized = true;
                 continueTrace($this->buildSentryTraceValue(), $request->getHeaderLine('baggage'));
+
                 return;
             }
         }
@@ -120,6 +123,7 @@ class TraceContext implements TraceContextInterface
     private function buildSentryTraceValue(): string
     {
         $sentryContext = $this->getSentryProvidedContext();
+
         return $sentryContext->getTraceId() . '-' . $sentryContext->getParentId();
     }
 }

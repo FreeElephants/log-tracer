@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace FreeElephants\LogTracer;
@@ -7,7 +8,6 @@ use Psr\Http\Message\MessageInterface;
 
 class SimpleTraceContext implements TraceContextInterface
 {
-
     private string $traceId;
     private string $parentId;
     private bool $isSampled = false;
