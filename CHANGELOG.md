@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Monolog v2 + v3 Processors
-- SentryTraceProvider
+- Sentry\TraceContext
+- SimpleTraceContext
 - Common pkg classes
 
 [Unreleased]: https://github.com/FreeElephants/log-tracer/compare/0.0.1...HEAD

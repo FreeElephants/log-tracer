@@ -1,8 +1,13 @@
 {
     "name": "free-elephants/log-tracer",
-    "description": "",
+    "description": "Traceparent W3C spec implementation: trace requests, log trace id, ",
     "license": "BSD-2-Clause",
-    "authors": [],
+    "authors": [
+        {
+            "name": "samizdam",
+            "email": "samizdam@gmail.com"
+        }
+    ],
     "require-dev": {
         "phpunit/phpunit": ">=9.3",
         "sentry/sentry": "^4.6",
