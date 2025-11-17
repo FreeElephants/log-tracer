@@ -76,4 +76,15 @@ class SimpleTraceContextTest extends TestCase
         $this->assertStringEndsNotWith($context->getParentId(), $headerLine);
         $this->assertStringEndsWith('-01', $headerLine);
     }
+
+    public function testLazyInitializeWithDefault(): void
+    {
+        $context = new SimpleTraceContext();
+
+        $this->assertFalse($context->isInitialized());
+
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{32}$/i', $context->getTraceId());
+
+        $this->assertTrue($context->isInitialized());
+    }
 }

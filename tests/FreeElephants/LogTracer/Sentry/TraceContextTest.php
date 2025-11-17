@@ -92,4 +92,15 @@ class TraceContextTest extends TestCase
         $this->assertSame('4bf92f3577b34da6a3ce929d0e0e4736', $context->getTraceId());
         $this->assertNotSame('00f067aa0ba902b7', $context->getParentId(), 'Sentry anywhere continue trace with up span on populate context');
     }
+
+    public function testLazyInitializeWithDefault(): void
+    {
+        $context = new TraceContext();
+
+        $this->assertFalse($context->isInitialized());
+
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{32}$/i', $context->getTraceId());
+
+        $this->assertTrue($context->isInitialized());
+    }
 }
