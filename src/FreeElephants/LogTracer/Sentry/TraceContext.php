@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FreeElephants\LogTracer\Sentry;
 
-use FreeElephants\LogTracer\Exception\NotInitializedTraceContextUsage;
 use FreeElephants\LogTracer\TraceContextInterface;
 use Psr\Http\Message\MessageInterface;
 use Sentry\SentrySdk;
@@ -20,7 +19,6 @@ class TraceContext implements TraceContextInterface
     private bool $isInitialized = false;
     private string $traceId;
     private string $parentId;
-    private bool $isSampled = false;
 
     private HubInterface $hub;
 
@@ -53,7 +51,6 @@ class TraceContext implements TraceContextInterface
             if (preg_match(self::W3C_TRACEPARENT_HEADER_REGEX, $incomeValue, $parts) === 1) {
                 $this->traceId = $parts['trace_id'];
                 $this->parentId = $parts['parent_id'];
-                $this->isSampled = $parts['sampled'] === '01';
 
                 $this->isInitialized = true;
                 continueTrace(sprintf('%s-%s', $this->traceId, $this->parentId), $request->getHeaderLine('baggage'));
@@ -63,9 +60,6 @@ class TraceContext implements TraceContextInterface
             if (preg_match(self::SENTRY_TRACE_HEADER_REGEX, $incomeValue, $parts) === 1) {
                 $this->traceId = $parts['trace_id'];
                 $this->parentId = $parts['span_id'];
-                if ($parts['sampled']) {
-                    $this->isSampled = $parts['sampled'] === '01';
-                }
 
                 $this->isInitialized = true;
                 continueTrace($this->buildSentryTraceValue(), $request->getHeaderLine('baggage'));
@@ -96,7 +90,6 @@ class TraceContext implements TraceContextInterface
 
         $this->traceId = $sentryContext->getTraceId();
         $this->parentId = $sentryContext->getParentId();
-        $this->isSampled = $sentryContext->isSampled();
 
         $this->isInitialized = true;
     }
