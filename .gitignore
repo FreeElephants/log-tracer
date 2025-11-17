@@ -6,6 +6,7 @@
 
 # Local
 .env
+.php-cs-fixer.cache
 
 # PHPUnit
 .phpunit.result.cache
@@ -13,4 +14,5 @@ phpunit.xml
 tests/_coverage
 
 # composer
+composer.lock
 vendor/
