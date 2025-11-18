@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - TraceRequestMiddleware
 - TraceResponseMiddleware
 
+### Changed
+- Remove composer/semver dep
+
 ### Fixed
 - Init SimpleTraceContext on trace message if not
 
