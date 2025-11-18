@@ -31,7 +31,7 @@ class SimpleTraceContext extends AbstractTraceContext
 
     public function traceMessage(MessageInterface $message, bool $updateParent = true): MessageInterface
     {
-        if(!$this->isInitialized()) {
+        if (!$this->isInitialized()) {
             $this->populateWithDefaults();
         }
 
