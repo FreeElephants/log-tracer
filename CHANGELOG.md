@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Init SimpleTraceContext on trace message if not
+
 ## [0.0.1] - 2025-11-17
 
 ### Added
