@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.2] - 2025-11-18
+
+### Added
+- TraceRequestMiddleware
+- TraceResponseMiddleware
+
+### Changed
+- Remove composer/semver dep
+
+### Fixed
+- Init SimpleTraceContext on trace message if not
+
 ## [0.0.1] - 2025-11-17
 
 ### Added
@@ -14,5 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SimpleTraceContext
 - Common pkg classes
 
-[Unreleased]: https://github.com/FreeElephants/log-tracer/compare/0.0.1...HEAD
+[Unreleased]: https://github.com/FreeElephants/log-tracer/compare/0.0.2...HEAD
+[0.0.2]: https://github.com/FreeElephants/log-tracer/releases/tag/0.0.2
 [0.0.1]: https://github.com/FreeElephants/log-tracer/releases/tag/0.0.1

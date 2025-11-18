@@ -31,6 +31,10 @@ class SimpleTraceContext extends AbstractTraceContext
 
     public function traceMessage(MessageInterface $message, bool $updateParent = true): MessageInterface
     {
+        if (!$this->isInitialized()) {
+            $this->populateWithDefaults();
+        }
+
         return $message->withHeader('traceparent', sprintf('00-%s-%s-%s', $this->traceId, $this->getParentId($updateParent), $this->isSampled ? '01' : '00'));
     }
 
