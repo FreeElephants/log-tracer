@@ -20,5 +20,5 @@ interface TraceContextInterface
 
     public function getTraceId(): string;
 
-    public function getParentId(): string;
+    public function getParentId(bool $update = false): string;
 }
