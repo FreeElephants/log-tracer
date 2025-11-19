@@ -74,4 +74,12 @@ class SimpleTraceContext extends AbstractTraceContext
     {
         return bin2hex(random_bytes(16));
     }
+
+    public function populateWithValues(string $traceId, string $parentId)
+    {
+        $this->traceId = $traceId;
+        $this->parentId = $parentId;
+
+        $this->isInitialized = true;
+    }
 }

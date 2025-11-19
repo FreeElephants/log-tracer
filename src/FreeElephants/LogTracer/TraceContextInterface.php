@@ -12,6 +12,8 @@ interface TraceContextInterface
 
     public function isInitialized(): bool;
 
+    public function populateWithValues(string $traceId, string $parentId);
+
     public function populateWithDefaults();
 
     public function populateFromMessage(MessageInterface $request);

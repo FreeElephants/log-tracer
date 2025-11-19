@@ -6,8 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.3] - 2025-11-19
+
 ### Added
-- `$update` arg in getParentId() at interface level
+- `populateWithValues()` method
+
+### Fixed
+- `$update` arg in `getParentId()` at interface level
 
 ## [0.0.2] - 2025-11-18
 
@@ -29,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SimpleTraceContext
 - Common pkg classes
 
-[Unreleased]: https://github.com/FreeElephants/log-tracer/compare/0.0.2...HEAD
+[Unreleased]: https://github.com/FreeElephants/log-tracer/compare/0.0.3...HEAD
+[0.0.3]: https://github.com/FreeElephants/log-tracer/releases/tag/0.0.3
 [0.0.2]: https://github.com/FreeElephants/log-tracer/releases/tag/0.0.2
 [0.0.1]: https://github.com/FreeElephants/log-tracer/releases/tag/0.0.1
