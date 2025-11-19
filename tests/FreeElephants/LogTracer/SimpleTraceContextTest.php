@@ -96,7 +96,8 @@ class SimpleTraceContextTest extends TestCase
 
         $context->populateWithValues('4bf92f3577b34da6a3ce929d0e0e4736', '00f067aa0ba902b7');
 
-        $this->assertSame('4bf92f3577b34da6a3ce929d0e0e4736', $context->getTraceId());
         $this->assertTrue($context->isInitialized());
+        $this->assertSame('4bf92f3577b34da6a3ce929d0e0e4736', $context->getTraceId());
+        $this->assertSame('00f067aa0ba902b7', $context->getParentId());
     }
 }

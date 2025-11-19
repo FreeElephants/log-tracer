@@ -105,6 +105,8 @@ class TraceContext extends AbstractTraceContext
 
     public function populateWithValues(string $traceId, string $parentId)
     {
-        // TODO: Implement populateWithValues() method.
+        continueTrace($traceId . '-' . $parentId, getBaggage());
+
+        $this->isInitialized = true;
     }
 }

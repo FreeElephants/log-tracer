@@ -103,4 +103,18 @@ class TraceContextTest extends TestCase
 
         $this->assertTrue($context->isInitialized());
     }
+
+    public function testPopulateWithValues(): void
+    {
+        $context = new TraceContext();
+
+        $this->assertFalse($context->isInitialized());
+
+        $context->populateWithValues('4bf92f3577b34da6a3ce929d0e0e4736', '00f067aa0ba902b7');
+
+        $this->assertTrue($context->isInitialized());
+        $this->assertSame('4bf92f3577b34da6a3ce929d0e0e4736', $context->getTraceId());
+        $this->assertStringStartsWith('4bf92f3577b34da6a3ce929d0e0e4736', getTraceparent());
+        $this->assertNotSame('00f067aa0ba902b7', $context->getParentId(), 'Sentry anywhere continue trace with up span on populate context');
+    }
 }
