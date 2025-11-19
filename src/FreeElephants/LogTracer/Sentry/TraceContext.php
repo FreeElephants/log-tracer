@@ -16,8 +16,6 @@ use function Sentry\getTraceparent;
 class TraceContext extends AbstractTraceContext
 {
     private const SENTRY_TRACE_HEADER_REGEX = '/^[ \t]*(?<trace_id>[0-9a-f]{32})?-?(?<span_id>[0-9a-f]{16})?-?(?<sampled>[01])?[ \t]*$/i';
-    private string $traceId;
-    private string $parentId;
 
     private HubInterface $hub;
 
@@ -49,21 +47,15 @@ class TraceContext extends AbstractTraceContext
     {
         if ($incomeValue = $request->getHeaderLine('traceparent')) {
             if (preg_match(self::W3C_TRACEPARENT_HEADER_REGEX, $incomeValue, $parts) === 1) {
-                $this->traceId = $parts['trace_id'];
-                $this->parentId = $parts['parent_id'];
-
                 $this->isInitialized = true;
-                continueTrace(sprintf('%s-%s', $this->traceId, $this->parentId), $request->getHeaderLine('baggage'));
+                continueTrace(sprintf('%s-%s', $parts['trace_id'], $parts['parent_id']), $request->getHeaderLine('baggage'));
 
                 return;
             }
         } elseif ($incomeValue = $request->getHeaderLine('sentry-trace')) {
             if (preg_match(self::SENTRY_TRACE_HEADER_REGEX, $incomeValue, $parts) === 1) {
-                $this->traceId = $parts['trace_id'];
-                $this->parentId = $parts['span_id'];
-
                 $this->isInitialized = true;
-                continueTrace($this->buildSentryTraceValue(), $request->getHeaderLine('baggage'));
+                continueTrace($incomeValue, $request->getHeaderLine('baggage'));
 
                 return;
             }
@@ -78,15 +70,12 @@ class TraceContext extends AbstractTraceContext
             $this->populateWithDefaults();
         }
 
-        return $this->traceId;
+        return $this->getSentryProvidedContext()->getTraceId();
     }
 
     public function populateWithDefaults()
     {
-        $sentryContext = $this->getSentryProvidedContext();
-
-        $this->traceId = $sentryContext->getTraceId();
-        $this->parentId = $sentryContext->getParentId();
+        $this->getSentryProvidedContext();
 
         $this->isInitialized = true;
     }
@@ -112,13 +101,6 @@ class TraceContext extends AbstractTraceContext
         }
 
         return $sentryContext;
-    }
-
-    private function buildSentryTraceValue(): string
-    {
-        $sentryContext = $this->getSentryProvidedContext();
-
-        return $sentryContext->getTraceId() . '-' . $sentryContext->getParentId();
     }
 
     public function populateWithValues(string $traceId, string $parentId)
