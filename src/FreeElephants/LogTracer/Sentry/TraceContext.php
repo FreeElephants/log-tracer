@@ -120,4 +120,9 @@ class TraceContext extends AbstractTraceContext
 
         return $sentryContext->getTraceId() . '-' . $sentryContext->getParentId();
     }
+
+    public function populateWithValues(string $traceId, string $parentId)
+    {
+        // TODO: Implement populateWithValues() method.
+    }
 }

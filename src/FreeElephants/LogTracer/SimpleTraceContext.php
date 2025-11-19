@@ -74,4 +74,9 @@ class SimpleTraceContext extends AbstractTraceContext
     {
         return bin2hex(random_bytes(16));
     }
+
+    public function populateWithValues(string $traceId, string $parentId)
+    {
+        // TODO: Implement populateWithValues() method.
+    }
 }
