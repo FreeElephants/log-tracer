@@ -6,3 +6,8 @@
 - prs-7
 - monolog 2|3
 - sentry 
+
+```
+composer require free-elephants/log-tracer
+```
+
